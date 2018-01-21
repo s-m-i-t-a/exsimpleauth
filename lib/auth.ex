@@ -1,6 +1,6 @@
-defmodule Auth do
+defmodule ExSimpleAuth do
   @moduledoc """
-  Documentation for Auth.
+  Documentation for ExSimpleAuth.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Auth do
 
   ## Examples
 
-      iex> Auth.hello
+      iex> ExSimpleAuth.hello
       :world
 
   """

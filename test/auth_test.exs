@@ -1,8 +1,8 @@
-defmodule AuthTest do
+defmodule ExSimpleAuthTest do
   use ExUnit.Case
-  doctest Auth
+  doctest ExSimpleAuth
 
   test "greets the world" do
-    assert Auth.hello() == :world
+    assert ExSimpleAuth.hello() == :world
   end
 end

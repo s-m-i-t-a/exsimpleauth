@@ -1,10 +1,9 @@
-defmodule Auth.Mixfile do
+defmodule ExSimpleAuth.Mixfile do
   use Mix.Project
 
-  @organization "catchcake"
   def project do
     [
-      app: :auth,
+      app: :exsimpleauth,
       version: "0.1.0",
       organization: @organization,
       elixir: "~> 1.5",
@@ -17,7 +16,7 @@ defmodule Auth.Mixfile do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Auth.Application, []}
+      # mod: {ExSimpleAuth.Application, []}
     ]
   end
 
