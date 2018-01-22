@@ -22,6 +22,7 @@ defmodule ExSimpleAuth.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:jwt_claims, "~> 0.0"},
       {:json_web_token, "~> 0.2"},
       {:ex_doc, "~> 0.18.1", only: :dev},
       {:excoveralls, "~> 0.7", only: :test},
