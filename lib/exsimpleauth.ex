@@ -1,18 +1,10 @@
 defmodule ExSimpleAuth do
   @moduledoc """
-  Documentation for ExSimpleAuth.
+  A simple authentication library
   """
 
-  @doc """
-  Hello world.
+  alias ExSimpleAuth.Token
 
-  ## Examples
-
-      iex> ExSimpleAuth.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  defdelegate verify(data), to: Token
+  defdelegate generate(data, expiration), to: Token
 end
