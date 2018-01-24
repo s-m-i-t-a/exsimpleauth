@@ -5,6 +5,6 @@ defmodule ExSimpleAuth do
 
   alias ExSimpleAuth.Token
 
-  defdelegate verify(data), to: Token
-  defdelegate generate(data, expiration), to: Token
+  defdelegate verify(data, opts \\ []), to: Token
+  defdelegate generate(data, opts \\ []), to: Token
 end
