@@ -7,9 +7,11 @@ defmodule ExSimpleAuth.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
+      description: "A simple authentication library.",
+      deps: deps(),
+      package: package(),
     ]
   end
 
@@ -29,6 +31,18 @@ defmodule ExSimpleAuth.Mixfile do
       {:ex_doc, "~> 0.18.1", only: :dev},
       {:excoveralls, "~> 0.7", only: :test},
       {:credo, "~> 0.3", only: [:dev, :test]},
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: [
+        "Jindrich K. Smitka <smitka.j@gmail.com>",
+      ],
+      licenses: ["BSD"],
+      links: %{
+        "GitHub" => "https://github.com/s-m-i-t-a/exsimpleauth",
+      }
     ]
   end
 end
