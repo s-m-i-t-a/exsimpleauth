@@ -10,8 +10,8 @@ defmodule ExSimpleAuth.Plug do
 
   @impl true
   def init(opts) do
-    token_header = Keyword.get(opts, :http_header, "X-Auth-Token")
-    get_user = Keyword.get(opts, :get_user)
+    token_header = Keyword.get(opts, :http_header, "x-auth-token")
+    get_user = Keyword.get(opts, :get_user) || raise "'get_user' must be set"
 
     {get_user, token_header}
   end
@@ -42,7 +42,7 @@ defmodule ExSimpleAuth.Plug do
     conn
     |> Conn.send_resp(
       :unauthorized,
-      Poison.encode!(%{status: 400, message: claims_error_to_message(err)})
+      Poison.encode!(%{status: 401, message: claims_error_to_message(err)})
     )
     |> Conn.halt()
   end
