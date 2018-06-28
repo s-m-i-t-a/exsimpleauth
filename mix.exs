@@ -31,6 +31,9 @@ defmodule ExSimpleAuth.Mixfile do
       {:ex_doc, "~> 0.18.1", only: :dev},
       {:excoveralls, "~> 0.7", only: :test},
       {:credo, "~> 0.3", only: [:dev, :test]},
+      {:plug, "~> 1.5"},
+      {:poison, "~> 3.1"},
+      {:result, "~> 1.1"},
     ]
   end
 
