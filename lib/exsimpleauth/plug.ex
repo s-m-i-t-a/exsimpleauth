@@ -72,7 +72,7 @@ defmodule ExSimpleAuth.Plug do
     |> Conn.halt()
   end
 
-  defp send_error_resp(conn, ["application/json" | _] = content_type, status, msg) do
+  defp send_error_resp(conn, ["application/json" | _], status, msg) do
     status = Status.code(status)
 
     conn
