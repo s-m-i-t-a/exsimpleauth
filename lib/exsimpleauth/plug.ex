@@ -27,6 +27,7 @@ defmodule ExSimpleAuth.Plug do
 
   alias ExSimpleAuth.Token
   alias Plug.Conn
+  alias Plug.Conn.Status
 
   @behaviour Plug
 
@@ -63,11 +64,31 @@ defmodule ExSimpleAuth.Plug do
 
   defp store_user_or_deny_access({:error, err}, conn) do
     conn
-    |> Conn.send_resp(
+    |> send_error_resp(
+      Conn.get_req_header(conn, "content-type"),
       :unauthorized,
-      Poison.encode!(%{status: 401, message: claims_error_to_message(err)})
+      claims_error_to_message(err)
     )
     |> Conn.halt()
+  end
+
+  defp send_error_resp(conn, ["application/json" | _] = content_type, status, msg) do
+    status = Status.code(status)
+
+    conn
+    |> Conn.put_resp_header("content-type", "application/json")
+    |> Conn.send_resp(
+      status,
+      Poison.encode!(%{status: status, message: msg})
+    )
+  end
+
+  defp send_error_resp(conn, _content_type, status, msg) do
+    status = Status.code(status)
+
+    conn
+    |> Conn.put_resp_header("content-type", "text/plain")
+    |> Conn.send_resp(status, msg)
   end
 
   defp claims_error_to_message(errors) when is_binary(errors) do
