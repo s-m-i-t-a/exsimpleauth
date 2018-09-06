@@ -10,7 +10,7 @@ by adding `exsimpleauth` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:exsimpleauth, "~> 1.0.0"}
+    {:exsimpleauth, "~> 1.1.0"}
   ]
 end
 ```
