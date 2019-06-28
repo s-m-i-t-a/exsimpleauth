@@ -24,15 +24,15 @@ defmodule ExSimpleAuth.Token do
   returns data if token is valid
 
       iex> key = "y):'QGE8M-b+MEKl@k4e<;*9.BqL=@~B"
-      ...> data = %{"foo": 1234}
+      ...> data = %{foo: 1234}
       ...> token = ExSimpleAuth.Token.generate(data, key: key)
       ...> ExSimpleAuth.Token.verify(token, key: key)
-      {:ok, %{"foo": 1234}}
+      {:ok, %{foo: 1234}}
 
   returns expiration error when token expire
 
       iex> key = "y):'QGE8M-b+MEKl@k4e<;*9.BqL=@~B"
-      ...> data = %{"foo": 1234}
+      ...> data = %{foo: 1234}
       ...> token = ExSimpleAuth.Token.generate(data, key: key, expiration: 0)
       ...> ExSimpleAuth.Token.verify(token, key: key)
       {:error, [:exp]}
@@ -40,7 +40,7 @@ defmodule ExSimpleAuth.Token do
   returns error if token is invalid
 
       iex> key = "y):'QGE8M-b+MEKl@k4e<;*9.BqL=@~B"
-      ...> data = %{"foo": 1234}
+      ...> data = %{foo: 1234}
       ...> token = ExSimpleAuth.Token.generate(data, key: key)
       ...> key2 = "12345678901234567890123456789012"
       ...> ExSimpleAuth.Token.verify(token, key: key2)
@@ -75,7 +75,7 @@ defmodule ExSimpleAuth.Token do
   ## Examples
 
       iex> key = "y):'QGE8M-b+MEKl@k4e<;*9.BqL=@~B"
-      ...> data = %{"foo": 1234}
+      ...> data = %{foo: 1234}
       ...> ExSimpleAuth.Token.generate(data, key: key, iat: 1516788472)
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1MTY3ODg0NzIsImV4cCI6MTUxNjg3NDg3MiwiZGF0YSI6eyJmb28iOjEyMzR9fQ.vTHve65J0r48eTQdABKVzVMWj1E1IQCKTKM-OInh2Hk"
   """
