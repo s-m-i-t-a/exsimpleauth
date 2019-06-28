@@ -4,7 +4,7 @@ defmodule ExSimpleAuth.Mixfile do
   def project do
     [
       app: :exsimpleauth,
-      version: "1.1.1",
+      version: "1.1.2",
       elixir: "~> 1.6",
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
