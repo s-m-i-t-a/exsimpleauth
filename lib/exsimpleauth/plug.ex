@@ -35,9 +35,14 @@ defmodule ExSimpleAuth.Plug do
   def init(opts) do
     token_header = Keyword.get(opts, :http_header, "x-auth-token")
     get_user = Keyword.get(opts, :get_user) || raise "'get_user' must be set"
-    key = Keyword.get(opts, :key, System.get_env("SECRET_KEY"))
+    key = Keyword.get(opts, :key)
 
     {get_user, token_header, key}
+  end
+
+  @impl true
+  def call(conn, {get_user, token_header, nil}) do
+    call(conn, {get_user, token_header, System.get_env("SECRET_KEY")})
   end
 
   @impl true
