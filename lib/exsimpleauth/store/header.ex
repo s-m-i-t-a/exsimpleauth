@@ -1,6 +1,6 @@
 defmodule ExSimpleAuth.Store.Header do
   @moduledoc """
-  Find token in http headers.
+  Find a token in http headers.
   """
 
   @behaviour ExSimpleAuth.Store
