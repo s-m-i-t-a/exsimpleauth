@@ -4,8 +4,8 @@ defmodule ExSimpleAuth.Plug do
 
   ## Options
 
-  * `:http_header` - The name of the HTTP *request* header to check for
-    existing request token. Default value is "x-auth-token".
+  * `:auth_token_key` - The key where the auth token is stored.  Default value is "x-auth-token".
+  * `:store` - auth token store. Supported stores is `:header`, `:session`. Default is `:header`.
   * `:get_user` - The function returns the user.
     It has input data decoded from the JWT token and returns either `{:ok, user}` or `{:error, message}`.
   * `:key` - decryption key. If not used,
@@ -13,7 +13,7 @@ defmodule ExSimpleAuth.Plug do
 
   ## Examples
 
-      plug ExSimpleAuth.Plug, http_header: "custom-auth-token", get_user: &MyUser.get/1
+      plug ExSimpleAuth.Plug, auth_token_key: "custom-auth-token", get_user: &MyUser.get/1
 
 
       iex> key = "y):'QGE8M-b+MEKl@k4e<;*9.BqL=@~B"
@@ -32,35 +32,37 @@ defmodule ExSimpleAuth.Plug do
   @behaviour Plug
 
   @impl true
-  def init(opts) do
-    token_header = Keyword.get(opts, :http_header, "x-auth-token")
+  def init(opts) when is_list(opts) do
+    auth_token_key = Keyword.get(opts, :auth_token_key, "x-auth-token")
+    store = opts |> Keyword.get(:store, :header) |> get_store()
     get_user = Keyword.get(opts, :get_user) || raise "'get_user' must be set"
     key = Keyword.get(opts, :key)
 
-    {get_user, token_header, key}
+    {get_user, auth_token_key, store, key}
   end
 
   @impl true
-  def call(conn, {get_user, token_header, nil}) do
-    call(conn, {get_user, token_header, System.get_env("SECRET_KEY")})
+  def call(%Conn{} = conn, {get_user, auth_token_key, store, nil}) do
+    call(conn, {get_user, auth_token_key, store, System.get_env("SECRET_KEY")})
   end
 
   @impl true
-  def call(conn, {get_user, token_header, key}) do
+  def call(%Conn{} = conn, {get_user, auth_token_key, store, key})
+      when is_function(get_user, 1) and is_binary(auth_token_key) and is_atom(store) and
+             is_binary(key) do
     conn
-    |> Conn.get_req_header(token_header)
-    |> token_to_result()
+    |> store.get(auth_token_key)
     |> Result.and_then(fn data -> Token.verify(data, key: key) end)
     |> Result.and_then(get_user)
     |> store_user_or_deny_access(conn)
   end
 
-  defp token_to_result([]) do
-    {:error, "Auth token not found."}
+  defp get_store(:header) do
+    ExSimpleAuth.Store.Header
   end
 
-  defp token_to_result([token | _]) do
-    {:ok, token}
+  defp get_store(:session) do
+    ExSimpleAuth.Store.Session
   end
 
   defp store_user_or_deny_access({:ok, user}, conn) do
