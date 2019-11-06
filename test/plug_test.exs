@@ -60,6 +60,20 @@ defmodule PlugTest do
     assert data["message"] == "Auth token not found."
   end
 
+  test "should pass request if token is invalid and 'reject' is disabled" do
+    user = %{id: "1234567891"}
+    defaults = AuthPlug.init(get_user: fn value -> {:ok, value} end, reject?: false)
+
+    %Conn{halted: false, assigns: assigns} =
+      :get
+      |> conn("/foo")
+      |> put_req_header("x-auth-token", Token.generate(user, expiration: 0))
+      |> AuthPlug.call(defaults)
+
+    assert is_nil(Map.get(assigns, :user))
+    assert Map.get(assigns, :auth_error) =~ ~r/Token expired/
+  end
+
   test "should return text/plain if content type isn't set" do
     defaults = AuthPlug.init(get_user: fn value -> {:ok, value} end)
 
