@@ -29,25 +29,38 @@ defmodule ExSimpleAuth.Plug do
   alias Plug.Conn
   alias Plug.Conn.Status
 
+  defmodule Opts do
+    @moduledoc false
+    defstruct auth_token_key: "x-auth-token",
+              store: ExSimpleAuth.Store.Header,
+              get_user: nil,
+              key: nil
+  end
+
   @behaviour Plug
 
   @impl true
   def init(opts) when is_list(opts) do
-    auth_token_key = Keyword.get(opts, :auth_token_key, "x-auth-token")
-    store = opts |> Keyword.get(:store, :header) |> get_store()
-    get_user = Keyword.get(opts, :get_user) || raise "'get_user' must be set"
-    key = Keyword.get(opts, :key)
-
-    {get_user, auth_token_key, store, key}
+    %Opts{
+      auth_token_key: Keyword.get(opts, :auth_token_key, "x-auth-token"),
+      store: opts |> Keyword.get(:store, :header) |> get_store(),
+      get_user: Keyword.get(opts, :get_user) || raise("'get_user' must be set"),
+      key: Keyword.get(opts, :key)
+    }
   end
 
   @impl true
-  def call(%Conn{} = conn, {get_user, auth_token_key, store, nil}) do
-    call(conn, {get_user, auth_token_key, store, System.get_env("SECRET_KEY")})
+  def call(%Conn{} = conn, %Opts{key: nil} = opts) do
+    call(conn, Map.put(opts, :key, System.get_env("SECRET_KEY")))
   end
 
   @impl true
-  def call(%Conn{} = conn, {get_user, auth_token_key, store, key})
+  def call(%Conn{} = conn, %Opts{
+        get_user: get_user,
+        auth_token_key: auth_token_key,
+        store: store,
+        key: key
+      })
       when is_function(get_user, 1) and is_binary(auth_token_key) and is_atom(store) and
              is_binary(key) do
     conn
