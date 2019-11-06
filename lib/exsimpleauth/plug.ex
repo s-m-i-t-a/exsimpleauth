@@ -6,6 +6,8 @@ defmodule ExSimpleAuth.Plug do
 
   * `:auth_token_key` - The key where the auth token is stored.  Default value is "x-auth-token".
   * `:store` - auth token store. Supported stores is `:header`, `:session`. Default is `:header`.
+  * `:reject` - When is `true`, then request ends with _unauthorized_ status and it's sent to the client.
+    Default is `true`.
   * `:get_user` - The function returns the user.
     It has input data decoded from the JWT token and returns either `{:ok, user}` or `{:error, message}`.
   * `:key` - decryption key. If not used,
@@ -33,6 +35,7 @@ defmodule ExSimpleAuth.Plug do
     @moduledoc false
     defstruct auth_token_key: "x-auth-token",
               store: ExSimpleAuth.Store.Header,
+              reject?: true,
               get_user: nil,
               key: nil
   end
@@ -44,6 +47,7 @@ defmodule ExSimpleAuth.Plug do
     %Opts{
       auth_token_key: Keyword.get(opts, :auth_token_key, "x-auth-token"),
       store: opts |> Keyword.get(:store, :header) |> get_store(),
+      reject?: Keyword.get(opts, :reject?, true),
       get_user: Keyword.get(opts, :get_user) || raise("'get_user' must be set"),
       key: Keyword.get(opts, :key)
     }
@@ -58,16 +62,19 @@ defmodule ExSimpleAuth.Plug do
   def call(%Conn{} = conn, %Opts{
         get_user: get_user,
         auth_token_key: auth_token_key,
+        reject?: reject?,
         store: store,
         key: key
       })
       when is_function(get_user, 1) and is_binary(auth_token_key) and is_atom(store) and
-             is_binary(key) do
+             is_binary(key) and is_boolean(reject?) do
     conn
     |> store.get(auth_token_key)
     |> Result.and_then(fn data -> Token.verify(data, key: key) end)
     |> Result.and_then(get_user)
-    |> store_user_or_deny_access(conn)
+    |> Result.map(fn user -> Conn.assign(conn, :user, user) end)
+    |> Result.map_error(fn err -> Conn.assign(conn, :auth_error, err) end)
+    |> deny_access(reject?)
   end
 
   defp get_store(:header) do
@@ -78,11 +85,11 @@ defmodule ExSimpleAuth.Plug do
     ExSimpleAuth.Store.Session
   end
 
-  defp store_user_or_deny_access({:ok, user}, conn) do
-    Conn.assign(conn, :user, user)
+  defp deny_access({:ok, %Conn{} = conn}, _reject) do
+    conn
   end
 
-  defp store_user_or_deny_access({:error, err}, conn) do
+  defp deny_access({:error, %Conn{assigns: %{auth_error: err}} = conn}, true) do
     conn
     |> send_error_resp(
       Conn.get_req_header(conn, "content-type"),
@@ -90,6 +97,10 @@ defmodule ExSimpleAuth.Plug do
       claims_error_to_message(err)
     )
     |> Conn.halt()
+  end
+
+  defp deny_access({:error, %Conn{assigns: %{auth_error: err}} = conn}, false) do
+    Conn.assign(conn, :auth_error, claims_error_to_message(err))
   end
 
   defp send_error_resp(conn, ["application/json" | _], status, msg) do
